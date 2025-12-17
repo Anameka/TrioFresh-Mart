@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Product - TrioFresh Mart</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="icon" type="image/jpeg" href="/images/triofresh-mart.jpeg">
+  <style>
+    body { background-color: #f8f9fa; }
+    h1 { color: #28a745; }
+    .navbar { margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-success">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="index.html">TrioFresh Mart</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="stock.html">Stock Update</a></li>
+        <li class="nav-item"><a class="nav-link" href="purchase.html">Purchase</a></li>
+        <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
+        <li class="nav-item"><a class="nav-link" href="report.html">Inventory Report</a></li>
+        <li class="nav-item"><a class="nav-link" href="transcactionreport.html">Transaction Report</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <h2 class="mb-4">Add New Product 🛒</h2>
+
+  <!-- Add Product Card -->
+  <div class="card">
+    <div class="card-header">Product Details</div>
+    <div class="card-body">
+      <form id="addProductForm">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <input type="text" class="form-control" name="name" placeholder="Product Name" required>
+          </div>
+          <div class="col-md-4">
+            <select class="form-select" name="department" required>
+              <option value="">Select Department</option>
+              <option>Dairy</option>
+              <option>Bakery</option>
+              <option>Grocery</option>
+              <option>Fruits</option>
+              <option>Personal Care</option>
+              <option>Household</option>
+              <option>Vegetables</option>
+              <option>Meat &amp; Seafood</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <input type="number" class="form-control" name="price" placeholder="Price" min="1" required>
+          </div>
+          <div class="col-md-4">
+            <input type="number" class="form-control" name="quantity" placeholder="Quantity" min="0" required>
+          </div>
+          <div class="col-md-4">
+            <input type="number" class="form-control" name="reorderLevel" placeholder="Reorder Level" min="0" required>
+          </div>
+        </div>
+        <button class="btn btn-success mt-3">Add Product</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Add product form handler
+  document.getElementById("addProductForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const product = Object.fromEntries(formData.entries());
+    await fetch("/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(product)
+    });
+    e.target.reset();
+    alert("✅ Product added successfully!");
+  });
+</script>
+
+</body>
+</html>

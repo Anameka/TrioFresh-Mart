@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TrioFresh Mart</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="icon" type="image/jpeg" href="/images/triofresh-mart.jpeg">
+</head>
+
+  <style>
+    body { background-color: #f8f9fa; margin:0; }
+    h1, h2 { color: #28a745; }
+    .navbar { margin-bottom: 20px; }
+
+    /* Splash screen styles */
+    #splash {
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      background-color: #fff;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      z-index:9999;
+    }
+    #splash img {
+      width: 500px;
+      max-width:100%;
+      height:auto;
+    }
+    #mainContent {
+      display:none; /* hidden until splash ends */
+    }
+  </style>
+</head>
+<body>
+
+<!-- Splash Screen -->
+<div id="splash">
+  <!-- replace logo.png with your actual logo file -->
+  <img src="/images/triofresh-mart.jpeg" alt="TrioFresh Mart Logo">
+</div>
+
+<!-- Main Content -->
+<div id="mainContent">
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">TrioFresh Mart</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+              data-bs-target="#navbarNav" aria-controls="navbarNav" 
+              aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link" href="addproduct.html">Add Product</a></li>
+          <li class="nav-item"><a class="nav-link" href="stock.html">Stock Update</a></li>
+          <li class="nav-item"><a class="nav-link" href="purchase.html">Purchase</a></li>
+          <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
+          <li class="nav-item"><a class="nav-link" href="report.html">Inventory Report</a></li>
+          <li class="nav-item"><a class="nav-link" href="transcationreport.html">Transaction Report</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h2 class="mb-4">Three minds, one fresh vision 🛒</h2>
+
+    <!-- Add Product Form -->
+    <div class="card mb-4">
+      <div class="card-header">Add Product</div>
+      <div class="card-body">
+        <form id="addProductForm">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <input type="text" class="form-control" name="name" placeholder="Product Name" required>
+            </div>
+            <div class="col-md-3">
+              <select class="form-select" name="department" required>
+                <option value="">Select Department</option>
+                <option>Dairy</option>
+                <option>Bakery</option>
+                <option>Grocery</option>
+                <option>Fruits</option>
+                <option>Personal Care</option>
+                <option>Household</option>
+                <option>Vegetables</option>
+                <option>Meat &amp; Seafood</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <input type="number" class="form-control" name="price" placeholder="Price" min="1" required>
+            </div>
+            <div class="col-md-2">
+              <input type="number" class="form-control" name="quantity" placeholder="Quantity" min="0" required>
+            </div>
+            <div class="col-md-2">
+              <input type="number" class="form-control" name="reorderLevel" placeholder="Reorder Level" min="0" required>
+            </div>
+          </div>
+          <button class="btn btn-success mt-3">Add Product</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Inventory Table -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Inventory Report</span>
+        <button id="downloadPdfBtn" class="btn btn-danger btn-sm">⬇️ Download Invoice PDF</button>
+      </div>
+      <div class="card-body">
+        <table class="table table-striped" id="inventoryTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Department</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Reorder Level</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+  // Splash logic: show logo for 10 seconds, then reveal main content
+  setTimeout(() => {
+    document.getElementById("splash").style.display = "none";
+    document.getElementById("mainContent").style.display = "block";
+  }, 5000); // 3 seconds
+
+  // Inventory load + PDF logic
+  document.addEventListener("DOMContentLoaded", () => {
+    async function loadInventory() {
+      try {
+        const res = await fetch("/report");
+        const data = await res.json();
+        const tbody = document.querySelector("#inventoryTable tbody");
+        tbody.innerHTML = "";
+        data.forEach(p => {
+          const status = p.quantity <= p.reorderLevel ? "⚠️ Reorder Needed" : "✅ Sufficient";
+          const row = `<tr>
+            <td>${p.name}</td>
+            <td>${p.department}</td>
+            <td>₹${p.price}</td>
+            <td>${p.stock}</td>
+            <td>${p.reorderLevel}</td>
+            <td>${status}</td>
+          </tr>`;
+          tbody.innerHTML += row;
+        });
+      } catch (err) {
+        console.error("Error loading inventory:", err);
+      }
+    }
+
+    const form = document.getElementById("addProductForm");
+    if (form) {
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const product = Object.fromEntries(formData.entries());
+        try {
+          await fetch("/add", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(product)
+          });
+          e.target.reset();
+          loadInventory();
+        } catch (err) {
+          console.error("Error adding product:", err);
+        }
+      });
+    }
+
+    const pdfBtn = document.getElementById("downloadPdfBtn");
+    if (pdfBtn) {
+      pdfBtn.addEventListener("click", () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text("TrioFresh Mart - Inventory Report", 20, 20);
+
+        const rows = [];
+        document.querySelectorAll("#inventoryTable tbody tr").forEach(tr => {
+          const cells = Array.from(tr.querySelectorAll("td")).map(td => td.innerText);
+          rows.push(cells);
+        });
+
+        doc.autoTable({
+          head: [["Name", "Department", "Price", "Stock", "Reorder Level", "Status"]],
+          body: rows,
+          startY: 30
+        });
+
+        doc.save("InventoryReport.pdf");
+      });
+    }
+
+    loadInventory();
+  });
+</script>
+
+</body>
+</html>
